@@ -70,24 +70,22 @@ const Step2_TokenExchange = ({
         Exchange the ID Token at the Enterprise IDP for an ID-JAG Assertion.
       </p>
 
-      {sessionData.oktaClientId && sessionData.idToken && (
+      {sessionData.oktaTokenClientId && sessionData.idToken && (
         <div className="mb-6">
           <HttpRequestViewer
             content={`POST ${sessionData.oktaIssuer}/oauth2/v1/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange&
-client_id=${sessionData.oktaClientId}&
-client_secret=[REDACTED]&
-subject_token=${sessionData.idToken ? truncateToken(sessionData.idToken) : "[ID_TOKEN]"}&
+client_id=${sessionData.oktaTokenClientId}&
+${sessionData.oktaAuthMethod === "private_key_jwt"
+  ? `client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&\nclient_assertion=[REDACTED]`
+  : `client_secret=[REDACTED]`}&
+subject_token=${truncateToken(sessionData.idToken)}&
 subject_token_type=urn:ietf:params:oauth:token-type:id_token&
 requested_token_type=urn:ietf:params:oauth:token-type:id-jag&
-audience=https://${sessionData.auth0Domain}/${
-              sessionData.auth0Audience
-                ? `&
-resource=${sessionData.auth0Audience}`
-                : ""
-            }`}
+scope=${sessionData.oktaTokenScope ?? "read write"}&
+audience=https://${sessionData.auth0Domain}/`}
           />
         </div>
       )}

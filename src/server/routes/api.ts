@@ -1,6 +1,6 @@
 import express from "express";
 import { decodeJwt } from "jose";
-import { decodeJwtHeader, decodeJwtSafely } from "../utils.js";
+import { buildOktaClientAuth, decodeJwtHeader, decodeJwtSafely } from "../utils.js";
 
 const router = express.Router();
 
@@ -25,6 +25,7 @@ router.post("/okta-token-exchange", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "ID token not found in session" });
     }
 
+    const clientAuth = await buildOktaClientAuth();
     const response = await fetch(`${process.env.OKTA_ISSUER}/oauth2/v1/token`, {
       method: "POST",
       headers: {
@@ -32,15 +33,13 @@ router.post("/okta-token-exchange", requireAuth, async (req, res) => {
       },
       body: new URLSearchParams({
         grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-        client_id: process.env.OKTA_CLIENT_ID!,
-        client_secret: process.env.OKTA_CLIENT_SECRET!,
+        client_id: process.env.OKTA_TOKEN_CLIENT_ID ?? process.env.OKTA_CLIENT_ID!,
+        ...clientAuth,
         subject_token: idToken,
         subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
         requested_token_type: "urn:ietf:params:oauth:token-type:id-jag",
+        scope: process.env.OKTA_TOKEN_SCOPE ?? "read write",
         audience: `https://${process.env.AUTH0_DOMAIN!}/`,
-        ...(process.env.AUTH0_AUDIENCE && {
-          resource: process.env.AUTH0_AUDIENCE,
-        }),
       }),
     });
 
@@ -148,6 +147,9 @@ router.get("/inspector-debug", (req, res) => {
     accessTokenClaims,
     accessTokenHeader,
     oktaClientId: process.env.OKTA_CLIENT_ID,
+    oktaTokenClientId: process.env.OKTA_TOKEN_CLIENT_ID ?? process.env.OKTA_CLIENT_ID,
+    oktaAuthMethod: process.env.OKTA_AUTH_METHOD ?? "client_secret",
+    oktaTokenScope: process.env.OKTA_TOKEN_SCOPE ?? "read write",
     oktaIssuer: process.env.OKTA_ISSUER,
     auth0Domain: process.env.AUTH0_DOMAIN,
     auth0Audience: process.env.AUTH0_AUDIENCE,

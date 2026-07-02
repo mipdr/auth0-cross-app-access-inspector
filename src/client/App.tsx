@@ -20,6 +20,9 @@ export interface SessionData {
   accessTokenClaims?: any;
   accessTokenHeader?: any;
   oktaClientId?: string;
+  oktaTokenClientId?: string;
+  oktaAuthMethod?: string;
+  oktaTokenScope?: string;
   oktaIssuer?: string;
   auth0Domain?: string;
   auth0Audience?: string;

@@ -40,3 +40,6 @@ yarn-error.log*
 next-env.d.ts
 
 .idea/
+
+# Local planning/design docs
+docs/superpowers/
