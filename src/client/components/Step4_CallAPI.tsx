@@ -4,9 +4,10 @@ interface StepProps {
   session: SessionData;
   isLoading: boolean;
   refreshSessionData: () => Promise<void>;
+  stepNumber?: number;
 }
 
-const Step4_CallAPI = ({ session, isLoading }: StepProps) => {
+const Step4_CallAPI = ({ session, stepNumber = 4 }: StepProps) => {
   const isDisabled = !session.accessToken;
 
   return (
@@ -24,7 +25,7 @@ const Step4_CallAPI = ({ session, isLoading }: StepProps) => {
               isDisabled ? "text-gray-400" : "text-purple-600"
             }`}
           >
-            4
+            {stepNumber}
           </span>
         </div>
         <h2 className="text-xl font-semibold text-gray-900">

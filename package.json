@@ -1,16 +1,18 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "auth0-cross-app-access-inspector",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "nodemon -w src/server -x tsx src/server/main.ts",
     "start": "NODE_ENV=production tsx src/server/main.ts",
     "build": "vite build",
     "build:server": "tsc src/server/**/*.ts --outDir dist/server --target es2022 --module esnext --moduleResolution bundler",
+    "typecheck": "tsc -p src/client/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
     "preview": "npm run build && npm start"
   },
   "dependencies": {
+    "@node-saml/passport-saml": "^5.1.0",
     "@tailwindcss/vite": "^4.1.17",
     "@types/express-session": "^1.18.2",
     "@types/passport": "^1.0.17",

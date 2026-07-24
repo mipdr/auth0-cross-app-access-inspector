@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import hljs from 'highlight.js/lib/core';
 import http from 'highlight.js/lib/languages/http';
 import 'highlight.js/styles/github-dark.css';
@@ -11,10 +11,6 @@ interface HttpRequestViewerProps {
 }
 
 export const HttpRequestViewer: React.FC<HttpRequestViewerProps> = ({ content, title }) => {
-  useEffect(() => {
-    hljs.highlightAll();
-  }, [content]);
-
   const highlighted = hljs.highlight(content, { language: 'http' }).value;
 
   return (

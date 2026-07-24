@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { SessionData } from "../App";
-import { parseErrorResponse, truncateToken } from "../utils";
-import { HttpRequestViewer } from "./HttpRequestViewer";
-import { TokenResult } from "./TokenResult";
+import { SessionData } from "../../App";
+import { parseErrorResponse, truncateToken } from "../../utils";
+import { HttpRequestViewer } from "../HttpRequestViewer";
+import { TokenResult } from "../TokenResult";
 
 interface StepProps {
   sessionData: SessionData;
   refreshSessionData: () => Promise<void>;
 }
 
-const Step3_GetAccessToken = ({
+const SamlStep4_GetAccessToken = ({
   sessionData,
   refreshSessionData,
 }: StepProps) => {
@@ -19,15 +19,11 @@ const Step3_GetAccessToken = ({
   const handleGetAccessToken = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await fetch("/api/auth0-jwt-bearer", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
-
       if (!response.ok) {
         setError(await parseErrorResponse(response));
       } else {
@@ -55,7 +51,7 @@ const Step3_GetAccessToken = ({
           <span
             className={`font-semibold ${isDisabled ? "text-gray-400" : "text-green-600"}`}
           >
-            3
+            4
           </span>
         </div>
         <h2 className="text-xl font-semibold text-gray-900">
@@ -77,7 +73,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&
 client_id=${sessionData.auth0ClientId}&
 client_secret=[REDACTED]&
-assertion=${sessionData.idJagAssertion ? truncateToken(sessionData.idJagAssertion) : "[ID_JAG_ASSERTION]"}${
+assertion=${truncateToken(sessionData.idJagAssertion)}${
               sessionData.auth0Scope
                 ? `&
 scope=${sessionData.auth0Scope}`
@@ -94,20 +90,9 @@ resource=${sessionData.auth0Resource}`
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-          <div className="flex">
-            <svg
-              className="w-5 h-5 text-red-400 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-red-700 text-sm">{error}</span>
-          </div>
+          <span className="text-red-700 text-sm whitespace-pre-wrap">
+            {error}
+          </span>
         </div>
       )}
 
@@ -120,14 +105,7 @@ resource=${sessionData.auth0Resource}`
             : "bg-green-600 hover:bg-green-700 text-white"
         }`}
       >
-        {loading ? (
-          <span className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            Getting Token...
-          </span>
-        ) : (
-          "Get Access Token"
-        )}
+        {loading ? "Getting Token..." : "Get Access Token"}
       </button>
 
       {sessionData.accessToken && (
@@ -144,4 +122,4 @@ resource=${sessionData.auth0Resource}`
   );
 };
 
-export default Step3_GetAccessToken;
+export default SamlStep4_GetAccessToken;
