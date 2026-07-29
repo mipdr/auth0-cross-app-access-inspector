@@ -172,9 +172,6 @@ router.post("/auth0-jwt-bearer", requireAuth, async (req, res) => {
           client_id: process.env.AUTH0_CLIENT_ID!,
           client_secret: process.env.AUTH0_CLIENT_SECRET!,
           assertion: idJagAssertion,
-          ...(process.env.AUTH0_SCOPE && {
-            scope: process.env.AUTH0_SCOPE,
-          }),
           ...(process.env.AUTH0_RESOURCE && {
             resource: process.env.AUTH0_RESOURCE,
           }),
@@ -269,7 +266,6 @@ router.get("/inspector-debug", (req, res) => {
     auth0Domain: process.env.AUTH0_DOMAIN,
     auth0Audience: process.env.AUTH0_AUDIENCE,
     auth0ClientId: process.env.AUTH0_CLIENT_ID,
-    auth0Scope: process.env.AUTH0_SCOPE,
     auth0Resource: process.env.AUTH0_RESOURCE,
   });
 });

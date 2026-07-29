@@ -8,9 +8,6 @@ This implements the [Identity Assertion Authorization Grant](https://www.ietf.or
 
 For more information, see the [Auth0 documentation](https://auth0.com/docs/xaa-resource-app).
 
-
-> This sample app is a tool to test the Cross App Access end-to-end flow. Support of this flow is currently implemented by Auth0 as part of a private Beta program. To participate in this program, contact [Auth0 Support](http://support.auth0.com/) or your Technical Account Manager.
-
 ## Overview
 
 The Inspector supports authenticating the user against the enterprise IdP with either an **OIDC** or a **SAML**
@@ -78,21 +75,105 @@ You will configure:
 
 ### 3. Environment Configuration
 
-Copy `.env.example` to `.env` and fill in the values. The file is organized into sections:
-
-- **Server** — `APP_BASE_URL` and a required `SESSION_SECRET`.
-- **Okta org authorization server** — `OKTA_ISSUER` (always required) plus an optional dedicated token-exchange
-  client. A basic OIDC setup needs no dedicated client: it reuses `OKTA_CLIENT_ID` / `OKTA_CLIENT_SECRET` from the
-  OIDC block. A dedicated client is only required for **AI agent token exchange** (set `OKTA_AUTH_METHOD=private_key_jwt`,
-  `OKTA_TOKEN_CLIENT_ID`, `OKTA_PRIVATE_KEY`, `OKTA_PRIVATE_KEY_KID`) or for the SAML flow.
-- **Enterprise IdP: OIDC** — the commented `OKTA_CLIENT_ID` / `OKTA_CLIENT_SECRET` block. Uncomment it to enable the
-  OIDC flow; leave it commented for a SAML-only setup.
-- **Enterprise IdP: SAML** — the commented `SAML_*` block. Uncomment it to enable the SAML flow. Set at least
-  `SAML_IDP_SSO_URL` and `SAML_IDP_CERT`.
-- **Auth0** — `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_AUDIENCE`, and `AUTH0_SCOPE`.
+Copy `.env.example` to `.env` and fill in the values. This flow involves several distinct clients across two
+tenants, so each variable below names exactly which entity it refers to. The file is organized into five sections.
 
 You must configure at least one enterprise IdP (OIDC or SAML). If both are configured, the UI toggle lets you
 switch between them; if only one is, the app boots into it and disables the other.
+
+#### 1. Server
+
+**`APP_BASE_URL`** (required)
+The base URL this Inspector app is served from, e.g. `http://localhost:3000`. Used to build the OIDC/SAML
+redirect and callback URLs.
+
+**`SESSION_SECRET`** (required)
+A long, random string used to sign the session cookie. Any securely generated value works.
+
+#### 2. Okta org authorization server
+
+This is the authorization server that mints the **Identity Assertion JWT (ID-JAG)**. The token exchange needs a
+client to authenticate with. A basic OIDC setup reuses the OIDC app client from Section 3, so the dedicated
+token-exchange variables are only needed for **AI agent token exchange** or the **SAML flow**.
+
+**`OKTA_ISSUER`** (required)
+Your Okta org URL, e.g. `https://your-domain.okta.com` — the org authorization server that issues the ID-JAG.
+
+**`OKTA_TOKEN_CLIENT_ID`** (optional)
+Client ID of the dedicated **token-exchange client** — typically the **Okta AI Agent** registered under the
+Resource Application's *Resource Connections* tab. If unset, the OIDC app's `OKTA_CLIENT_ID` (Section 3) is used
+instead. Required for the SAML flow.
+
+**`OKTA_TOKEN_SCOPE`** (optional, default `read write`)
+Scopes requested in the ID Token → ID-JAG exchange (OIDC flow).
+
+**`OKTA_AUTH_METHOD`** (optional, default `client_secret`)
+Token-endpoint auth method: `client_secret` or `private_key_jwt`. Okta AI Agents authenticate with
+`private_key_jwt` (a signed JWT). Must be `private_key_jwt` for AI agent token exchange and for the SAML flow.
+
+**`OKTA_PRIVATE_KEY`** / **`OKTA_PRIVATE_KEY_KID`** (required when `OKTA_AUTH_METHOD=private_key_jwt`)
+The private key (PEM on one line with literal `\n`) and its key ID, taken from the Okta AI Agent registration.
+
+#### 3. Enterprise IdP: OIDC
+
+The Okta application that authenticates the user via OIDC. Leave this block commented for a SAML-only setup; the
+OIDC flow is enabled as soon as both values are set.
+
+**`OKTA_CLIENT_ID`** (required for the OIDC flow)
+Client ID of the **Okta OIDC application** used to sign the user in.
+
+**`OKTA_CLIENT_SECRET`** (required for the OIDC flow)
+Client secret of that same Okta OIDC application.
+
+#### 4. Enterprise IdP: SAML
+
+The Okta SAML application that authenticates the user. Leave this block commented for an OIDC-only setup; the SAML
+flow is enabled as soon as `SAML_IDP_SSO_URL` and `SAML_IDP_CERT` are set. SAML only authenticates the user — the
+token exchanges still use the token-exchange client from Section 2, which **must** be an Okta AI Agent
+(`OKTA_AUTH_METHOD=private_key_jwt`); a client secret will not work.
+
+**`SAML_SP_ENTITY_ID`** (required for the SAML flow)
+The Service Provider entity ID for this app; must match the *SP Entity ID* configured in the Okta SAML app,
+e.g. `http://localhost:3000/saml/metadata`.
+
+**`SAML_SP_ACS_URL`** (required for the SAML flow)
+The Assertion Consumer Service URL where Okta posts the SAMLResponse, e.g. `http://localhost:3000/saml/callback`.
+
+**`SAML_IDP_SSO_URL`** (required for the SAML flow)
+The IdP single sign-on URL, taken from the Okta SAML app's *Sign On* details.
+
+**`SAML_IDP_ISSUER`** (required for the SAML flow)
+The IdP entity ID / issuer, e.g. `http://www.okta.com/xxxxxxxx`.
+
+**`SAML_IDP_CERT`** (required for the SAML flow)
+The IdP signing certificate (PEM on one line with literal `\n`), used to validate the SAML response signature.
+
+**`SAML_RT_SCOPE`** (optional, default `openid offline_access`)
+Scope for the SAML Assertion → Refresh Token exchange.
+
+**`SAML_IDJAG_SCOPE`** (optional, default `read:item`)
+Scope for the Refresh Token → ID-JAG exchange.
+
+#### 5. Auth0 (Resource Application)
+
+The Auth0 tenant acting as the Resource Application's authorization server, and the **Requesting Application**
+registered within it.
+
+**`AUTH0_DOMAIN`** (required)
+Your Auth0 tenant domain, e.g. `your-domain.auth0.com`.
+
+**`AUTH0_CLIENT_ID`** (required)
+Client ID of the **Requesting Application** registration in your Auth0 tenant — the app initiating the Cross App
+Access flow (not the Okta clients above).
+
+**`AUTH0_CLIENT_SECRET`** (required)
+Client secret for that same Requesting Application registration.
+
+**`AUTH0_AUDIENCE`** (required)
+The API identifier (audience) of the **Resource Application API** registered in Auth0.
+
+**`AUTH0_RESOURCE`** (optional)
+When set, adds a `resource` parameter to the final access-token request, e.g. `https://your-resource-server`.
 
 ### 4. Run the Application
 

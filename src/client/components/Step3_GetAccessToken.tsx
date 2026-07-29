@@ -78,11 +78,6 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&
 client_id=${sessionData.auth0ClientId}&
 client_secret=[REDACTED]&
 assertion=${sessionData.idJagAssertion ? truncateToken(sessionData.idJagAssertion) : "[ID_JAG_ASSERTION]"}${
-              sessionData.auth0Scope
-                ? `&
-scope=${sessionData.auth0Scope}`
-                : ""
-            }${
               sessionData.auth0Resource
                 ? `&
 resource=${sessionData.auth0Resource}`
