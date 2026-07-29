@@ -6,11 +6,31 @@ import path from "path";
 import { fileURLToPath } from "url";
 import "dotenv/config";
 import "./config/passport.js";
+import "./config/saml.js";
 import authRoutes from "./routes/auth.js";
 import apiRoutes from "./routes/api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+if (!process.env.SESSION_SECRET) {
+  console.error(
+    "SESSION_SECRET is not set. Set it in your .env before starting the server.",
+  );
+  process.exit(1);
+}
+
+if (process.env.OKTA_AUTH_METHOD === "private_key_jwt") {
+  const missing = ["OKTA_PRIVATE_KEY", "OKTA_PRIVATE_KEY_KID"].filter(
+    (v) => !process.env[v],
+  );
+  if (missing.length) {
+    console.error(
+      `OKTA_AUTH_METHOD=private_key_jwt requires ${missing.join(", ")}. Set ${missing.length > 1 ? "them" : "it"} in your .env before starting the server.`,
+    );
+    process.exit(1);
+  }
+}
 
 const app = express();
 
@@ -20,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {

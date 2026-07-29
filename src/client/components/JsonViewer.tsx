@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import hljs from 'highlight.js/lib/core';
 import json from 'highlight.js/lib/languages/json';
 import 'highlight.js/styles/github-dark.css';
@@ -12,11 +12,6 @@ interface JsonViewerProps {
 
 export const JsonViewer: React.FC<JsonViewerProps> = ({ data, title }) => {
   const jsonString = JSON.stringify(data, null, 2);
-
-  useEffect(() => {
-    hljs.highlightAll();
-  }, [data]);
-
   const highlighted = hljs.highlight(jsonString, { language: 'json' }).value;
 
   return (

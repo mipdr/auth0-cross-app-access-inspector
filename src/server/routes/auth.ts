@@ -14,6 +14,22 @@ router.get('/login/callback',
   })
 );
 
+// SAML login - redirects to the enterprise SAML IdP
+router.get('/saml/login', passport.authenticate('saml'));
+
+// SAML ACS - the IdP posts the signed SAMLResponse here. The strategy validates
+// the signature; on success we persist the extracted assertion into the session.
+router.post(
+  '/saml/callback',
+  passport.authenticate('saml', { failureRedirect: '/', failureMessage: true }),
+  (req, res) => {
+    const user = req.user as { samlNameId?: string; samlAssertionB64?: string };
+    req.session.samlNameId = user?.samlNameId;
+    req.session.samlAssertionB64 = user?.samlAssertionB64;
+    res.redirect('/');
+  },
+);
+
 router.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {

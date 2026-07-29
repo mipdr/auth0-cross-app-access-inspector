@@ -4,6 +4,9 @@ declare module 'express-session' {
   interface SessionData {
     idJagAssertion?: string;
     accessToken?: string;
+    samlAssertionB64?: string;
+    samlRefreshToken?: string;
+    samlNameId?: string;
   }
 }
 

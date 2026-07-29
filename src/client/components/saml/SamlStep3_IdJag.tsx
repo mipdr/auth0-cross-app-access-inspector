@@ -1,33 +1,26 @@
 import { useState } from "react";
-import { SessionData } from "../App";
-import { parseErrorResponse, truncateToken } from "../utils";
-import { HttpRequestViewer } from "./HttpRequestViewer";
-import { TokenResult } from "./TokenResult";
+import { SessionData } from "../../App";
+import { parseErrorResponse, truncateToken } from "../../utils";
+import { HttpRequestViewer } from "../HttpRequestViewer";
+import { TokenResult } from "../TokenResult";
 
 interface StepProps {
   sessionData: SessionData;
   refreshSessionData: () => Promise<void>;
 }
 
-const Step2_TokenExchange = ({
-  sessionData,
-  refreshSessionData,
-}: StepProps) => {
+const SamlStep3_IdJag = ({ sessionData, refreshSessionData }: StepProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleExchange = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const response = await fetch("/api/okta-token-exchange", {
+      const response = await fetch("/api/saml-idjag-exchange", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
-
       if (!response.ok) {
         setError(await parseErrorResponse(response));
       } else {
@@ -40,7 +33,7 @@ const Step2_TokenExchange = ({
     }
   };
 
-  const isDisabled = !sessionData.idToken;
+  const isDisabled = !sessionData.samlRefreshToken;
 
   return (
     <div
@@ -55,19 +48,20 @@ const Step2_TokenExchange = ({
           <span
             className={`font-semibold ${isDisabled ? "text-gray-400" : "text-orange-600"}`}
           >
-            2
+            3
           </span>
         </div>
         <h2 className="text-xl font-semibold text-gray-900">
-          Obtain ID-JAG Assertion
+          Exchange Refresh Token for an ID-JAG Assertion
         </h2>
       </div>
 
       <p className="text-gray-600 mb-6">
-        Exchange the ID Token at the Enterprise IDP for an ID-JAG Assertion.
+        Exchange the Refresh Token at the Enterprise IDP for an ID-JAG Assertion
+        scoped to the Resource Authorization Server.
       </p>
 
-      {sessionData.oktaTokenClientId && sessionData.idToken && (
+      {sessionData.oktaTokenClientId && sessionData.samlRefreshToken && (
         <div className="mb-6">
           <HttpRequestViewer
             content={`POST ${sessionData.oktaIssuer}/oauth2/v1/token HTTP/1.1
@@ -75,34 +69,25 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange&
 client_id=${sessionData.oktaTokenClientId}&
-${sessionData.oktaAuthMethod === "private_key_jwt"
-  ? `client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&\nclient_assertion=[REDACTED]`
-  : `client_secret=[REDACTED]`}&
-subject_token=${truncateToken(sessionData.idToken)}&
-subject_token_type=urn:ietf:params:oauth:token-type:id_token&
+${
+  sessionData.oktaAuthMethod === "private_key_jwt"
+    ? `client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&\nclient_assertion=[REDACTED]`
+    : `client_secret=[REDACTED]`
+}&
+subject_token=${truncateToken(sessionData.samlRefreshToken)}&
+subject_token_type=urn:ietf:params:oauth:token-type:refresh_token&
 requested_token_type=urn:ietf:params:oauth:token-type:id-jag&
-scope=${sessionData.oktaTokenScope ?? "read write"}&
-audience=https://${sessionData.auth0Domain}/`}
+audience=https://${sessionData.auth0Domain}/&
+scope=${sessionData.samlIdjagScope ?? "read:item"}`}
           />
         </div>
       )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-          <div className="flex">
-            <svg
-              className="w-5 h-5 text-red-400 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-red-700 text-sm">{error}</span>
-          </div>
+          <span className="text-red-700 text-sm whitespace-pre-wrap">
+            {error}
+          </span>
         </div>
       )}
 
@@ -115,14 +100,7 @@ audience=https://${sessionData.auth0Domain}/`}
             : "bg-orange-600 hover:bg-orange-700 text-white"
         }`}
       >
-        {loading ? (
-          <span className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            Exchanging...
-          </span>
-        ) : (
-          "Exchange ID Token"
-        )}
+        {loading ? "Exchanging..." : "Exchange Refresh Token"}
       </button>
 
       {sessionData.idJagAssertion && (
@@ -139,4 +117,4 @@ audience=https://${sessionData.auth0Domain}/`}
   );
 };
 
-export default Step2_TokenExchange;
+export default SamlStep3_IdJag;
