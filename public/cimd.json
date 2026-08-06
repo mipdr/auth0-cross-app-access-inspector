@@ -1,16 +1,12 @@
 {
-  "client_id": "https://raw.githubusercontent.com/mipdr/auth0-cross-app-access-inspector/main/cimd.json",
+  "client_id": "https://raw.githubusercontent.com/mipdr/auth0-cross-app-access-inspector/feat/cimd-client/public/cimd.json",
   "client_name": "Auth0 Cross App Access Inspector",
   "client_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector",
   "logo_uri": "https://cdn.auth0.com/website/bob/press/logo-light.png",
   "tos_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector/blob/main/LICENSE",
   "policy_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector/blob/main/LICENSE",
-  "redirect_uris": [
-    "http://localhost:3000/login/callback"
-  ],
-  "grant_types": [
-    "urn:ietf:params:oauth:grant-type:jwt-bearer"
-  ],
+  "redirect_uris": ["http://localhost:3000/login/callback"],
+  "grant_types": ["urn:ietf:params:oauth:grant-type:jwt-bearer"],
   "response_types": [],
   "token_endpoint_auth_method": "none"
 }
