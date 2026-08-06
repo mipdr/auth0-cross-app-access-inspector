@@ -6,7 +6,11 @@
   "tos_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector/blob/main/LICENSE",
   "policy_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector/blob/main/LICENSE",
   "redirect_uris": ["http://localhost:3000/login/callback"],
-  "grant_types": ["urn:ietf:params:oauth:grant-type:jwt-bearer"],
+  "grant_types": [
+    "authorization_code",
+    "refresh_token",
+    "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  ],
   "response_types": [],
   "token_endpoint_auth_method": "none"
 }
