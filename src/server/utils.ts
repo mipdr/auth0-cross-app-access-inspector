@@ -36,7 +36,7 @@ export const decodeJwtHeader = (token: string) => {
 };
 
 export async function buildOktaClientAuth(): Promise<Record<string, string>> {
-  const method = process.env.OKTA_AUTH_METHOD ?? "client_secret";
+  const method = process.env.OKTA_AUTH_METHOD ?? "private_key_jwt";
 
   if (method === "private_key_jwt") {
     const pem = process.env.OKTA_PRIVATE_KEY!.replace(/\\n/g, "\n");

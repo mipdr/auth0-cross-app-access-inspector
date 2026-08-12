@@ -43,6 +43,7 @@ export interface SessionData {
   auth0Domain?: string;
   auth0Audience?: string;
   auth0ClientId?: string;
+  auth0HasClientSecret?: boolean;
   auth0Resource?: string;
 }
 
