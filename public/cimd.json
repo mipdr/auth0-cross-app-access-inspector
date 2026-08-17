@@ -1,7 +1,7 @@
 {
   "client_id": "https://raw.githubusercontent.com/auth0-samples/auth0-cross-app-access-inspector/main/public/cimd.json",
   "client_name": "Auth0 Cross App Access Inspector",
-  "client_uri": "https://github.com/mipdr/auth0-cross-app-access-inspector",
+  "client_uri": "https://github.com/auth0-samples/auth0-cross-app-access-inspector",
   "redirect_uris": ["http://localhost:3000/login/callback"],
   "grant_types": [
     "authorization_code",

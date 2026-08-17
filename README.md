@@ -202,12 +202,12 @@ draft. The specification forbids symmetric client secrets, so a CIMD client is e
 
 ### The document shipped in this repo
 
-This repository ships a ready-to-use CIMD document at [`cimd.json`](./cimd.json). Because a CIMD document's
+This repository ships a ready-to-use CIMD document at [`public/cimd.json`](./public/cimd.json). Because a CIMD document's
 `client_id` field **must** exactly equal the URL it is served from, the file is pinned to its raw URL on the
 default branch:
 
 ```
-https://raw.githubusercontent.com/mipdr/auth0-cross-app-access-inspector/main/cimd.json
+https://raw.githubusercontent.com/auth0-samples/auth0-cross-app-access-inspector/main/public/cimd.json
 ```
 
 It describes the Inspector as a **public client** (`token_endpoint_auth_method: "none"`) using the
