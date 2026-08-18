@@ -75,8 +75,12 @@ const Step3_GetAccessToken = ({
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&
-client_id=${sessionData.auth0ClientId}&
-client_secret=[REDACTED]&
+client_id=${sessionData.auth0ClientId}&${
+              sessionData.auth0HasClientSecret
+                ? `
+client_secret=[REDACTED]&`
+                : ""
+            }
 assertion=${sessionData.idJagAssertion ? truncateToken(sessionData.idJagAssertion) : "[ID_JAG_ASSERTION]"}${
               sessionData.auth0Resource
                 ? `&

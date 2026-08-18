@@ -170,7 +170,9 @@ router.post("/auth0-jwt-bearer", requireAuth, async (req, res) => {
         body: new URLSearchParams({
           grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
           client_id: process.env.AUTH0_CLIENT_ID!,
-          client_secret: process.env.AUTH0_CLIENT_SECRET!,
+          ...(process.env.AUTH0_CLIENT_SECRET && {
+            client_secret: process.env.AUTH0_CLIENT_SECRET,
+          }),
           assertion: idJagAssertion,
           ...(process.env.AUTH0_RESOURCE && {
             resource: process.env.AUTH0_RESOURCE,
@@ -260,12 +262,13 @@ router.get("/inspector-debug", (req, res) => {
     accessTokenHeader,
     oktaClientId: process.env.OKTA_CLIENT_ID,
     oktaTokenClientId: process.env.OKTA_TOKEN_CLIENT_ID ?? process.env.OKTA_CLIENT_ID,
-    oktaAuthMethod: process.env.OKTA_AUTH_METHOD ?? "client_secret",
+    oktaAuthMethod: process.env.OKTA_AUTH_METHOD ?? "private_key_jwt",
     oktaTokenScope: process.env.OKTA_TOKEN_SCOPE ?? "read write",
     oktaIssuer: process.env.OKTA_ISSUER,
     auth0Domain: process.env.AUTH0_DOMAIN,
     auth0Audience: process.env.AUTH0_AUDIENCE,
     auth0ClientId: process.env.AUTH0_CLIENT_ID,
+    auth0HasClientSecret: Boolean(process.env.AUTH0_CLIENT_SECRET),
     auth0Resource: process.env.AUTH0_RESOURCE,
   });
 });

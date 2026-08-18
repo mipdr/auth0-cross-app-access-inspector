@@ -107,8 +107,8 @@ instead. Required for the SAML flow.
 **`OKTA_TOKEN_SCOPE`** (optional, default `read write`)
 Scopes requested in the ID Token → ID-JAG exchange (OIDC flow).
 
-**`OKTA_AUTH_METHOD`** (optional, default `client_secret`)
-Token-endpoint auth method: `client_secret` or `private_key_jwt`. Okta AI Agents authenticate with
+**`OKTA_AUTH_METHOD`** (optional, default `private_key_jwt`)
+Token-endpoint auth method: `private_key_jwt` or `client_secret`. Okta AI Agents authenticate with
 `private_key_jwt` (a signed JWT). Must be `private_key_jwt` for AI agent token exchange and for the SAML flow.
 
 **`OKTA_PRIVATE_KEY`** / **`OKTA_PRIVATE_KEY_KID`** (required when `OKTA_AUTH_METHOD=private_key_jwt`)
@@ -163,11 +163,15 @@ registered within it.
 Your Auth0 tenant domain, e.g. `your-domain.auth0.com`.
 
 **`AUTH0_CLIENT_ID`** (required)
-Client ID of the **Requesting Application** registration in your Auth0 tenant — the app initiating the Cross App
-Access flow (not the Okta clients above).
+Identifies the **Requesting Application** — the app initiating the Cross App Access flow (not the Okta clients
+above) — to Auth0. This is either the `client_id` of a Requesting Application you registered in the Auth0
+dashboard, **or** the HTTPS URL of a hosted **Client ID Metadata Document (CIMD)**. See
+[Client ID Metadata Document (CIMD)](#client-id-metadata-document-cimd) below to use CIMD instead of a
+pre-registered client.
 
-**`AUTH0_CLIENT_SECRET`** (required)
-Client secret for that same Requesting Application registration.
+**`AUTH0_CLIENT_SECRET`** (required for a pre-registered confidential client)
+Client secret for that same Requesting Application registration. Leave it unset when `AUTH0_CLIENT_ID` is a CIMD
+URL — the shipped document describes a public client, which has no secret.
 
 **`AUTH0_AUDIENCE`** (required)
 The API identifier (audience) of the **Resource Application API** registered in Auth0.
@@ -182,6 +186,48 @@ npm run dev
 ```
 
 This starts the development server at `http://localhost:3000`.
+
+## Client ID Metadata Document (CIMD)
+
+Cross App Access is built for scenarios — AI agents especially — where a Requesting App shows up without having
+been hand-registered in advance. To support this, Auth0 (as the Resource App authorization server) lets a client
+identify itself with a **Client ID Metadata Document (CIMD)** instead of a pre-registered `client_id` + secret.
+
+With CIMD, the `client_id` **is an HTTPS URL** that resolves to a JSON document describing the client. When Auth0
+receives a token request whose `client_id` is a URL, it dereferences the URL, reads the metadata, and treats the
+document as the client registration — no dashboard registration step required. This follows the
+[OAuth Client ID Metadata Document](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/)
+draft. The specification forbids symmetric client secrets, so a CIMD client is either a public client
+(`token_endpoint_auth_method: "none"`) or authenticates with `private_key_jwt` and a published `jwks_uri`.
+
+### The document shipped in this repo
+
+This repository ships a ready-to-use CIMD document at [`public/cimd.json`](./public/cimd.json). Because a CIMD document's
+`client_id` field **must** exactly equal the URL it is served from, the file is pinned to its raw URL on the
+default branch:
+
+```
+https://raw.githubusercontent.com/auth0-samples/auth0-cross-app-access-inspector/main/public/cimd.json
+```
+
+It describes the Inspector as a **public client** (`token_endpoint_auth_method: "none"`) using the
+`urn:ietf:params:oauth:grant-type:jwt-bearer` grant — exactly the grant the Inspector uses to exchange the ID-JAG
+for an Auth0 access token. If you fork or relocate the repository, update the `client_id` field so it matches the
+new raw URL; otherwise Auth0 will reject the mismatch.
+
+### Using it
+
+Because Auth0 fetches the URL over the public internet, the document has to be reachable there (a localhost URL
+won't work) — hosting it in the GitHub repo is what makes it dereferenceable. To use CIMD in the flow:
+
+1. **Auth0 (Resource App)** — set `AUTH0_CLIENT_ID` to the CIMD URL above and leave `AUTH0_CLIENT_SECRET` unset.
+   Enable CIMD-based clients for Cross App Access on your Auth0 tenant per the
+   [Auth0 XAA documentation](https://auth0.com/docs/ai-agents-mcp/cross-app-access).
+2. **Okta (Enterprise IdP)** — register the same CIMD URL as the Requesting App / AI Agent client identifier when
+   configuring the Resource Connection, so the ID-JAG is issued to that client. See the
+   [Okta Cross App Access documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps-cross-app-access.htm).
+
+The same document therefore configures both ends of the flow from a single hosted URL.
 
 ## Scripts
 
