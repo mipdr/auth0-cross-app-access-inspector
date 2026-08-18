@@ -107,8 +107,8 @@ instead. Required for the SAML flow.
 **`OKTA_TOKEN_SCOPE`** (optional, default `read write`)
 Scopes requested in the ID Token → ID-JAG exchange (OIDC flow).
 
-**`OKTA_AUTH_METHOD`** (optional, default `client_secret`)
-Token-endpoint auth method: `client_secret` or `private_key_jwt`. Okta AI Agents authenticate with
+**`OKTA_AUTH_METHOD`** (optional, default `private_key_jwt`)
+Token-endpoint auth method: `private_key_jwt` or `client_secret`. Okta AI Agents authenticate with
 `private_key_jwt` (a signed JWT). Must be `private_key_jwt` for AI agent token exchange and for the SAML flow.
 
 **`OKTA_PRIVATE_KEY`** / **`OKTA_PRIVATE_KEY_KID`** (required when `OKTA_AUTH_METHOD=private_key_jwt`)
